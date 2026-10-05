@@ -13,6 +13,8 @@ const { globalLimiter } = require('./Middliwares/rateLimiter');
 const { notFoundHandler, globalErrorHandler } = require('./Middliwares/errorHandler');
 
 const app = express();
+// const compression = require('compression');
+//app.use(compression());
 
 // 1. Security HTTP Headers
 app.use(helmet());
@@ -45,6 +47,15 @@ if (process.env.NODE_ENV === 'development') {
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'success', uptime: process.uptime() });
 });
+
+// 1. المسارات الأساسية
+app.use('/api', routes);
+
+// 2. مسار 404 لأي مسار غير معرف (قبل معالج الأخطاء العام مباشرة)
+app.use(notFoundHandler);
+
+// 3. المعالج العام للأخطاء (دائماً آخر سطر ويحتوي على 4 باراميترات)
+app.use(globalErrorHandler);
 
 // 9. توجيه الـ API
 app.use('/api/v1', routes);
