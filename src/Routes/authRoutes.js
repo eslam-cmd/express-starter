@@ -1,17 +1,14 @@
 const express = require('express');
-const authController = require('../controllers/authController');
+const authController = require('../Controllers/authController');
+const validate = require('../Middliwares/validate');
+const { registerSchema, loginSchema } = require('../validations/authValidation');
+const { authLimiter } = require('../Middliwares/rateLimiter');
 
 const router = express.Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+// تطبيق الحظر الصارم على عمليات الدخول والتسجيل
+router.post('/register', authLimiter, validate(registerSchema), authController.register);
+router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/logout', authController.logout);
 
-router.get('/me', protect, (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    data: { user: req.user }
-  });
-});
-
-router.get('/logout', authController.logout);
 module.exports = router;

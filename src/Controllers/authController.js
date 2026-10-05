@@ -10,14 +10,18 @@ const generateToken = (userId) => {
   });
 };
 
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+});
+
 const sendTokenResponse = (user, statusCode, res) => {
   const token = generateToken(user.id);
-
   const cookieOptions = {
+    ...getCookieOptions(),
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
   };
 
   user.password = undefined;
@@ -82,10 +86,7 @@ const login = asyncHandler(async (req, res, next) => {
 
 // Logout
 const logout = (req, res) => {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
-  });
+  res.clearCookie('jwt', getCookieOptions());
   res.status(200).json({ status: 'success', message: 'تم تسجيل الخروج بنجاح' });
 };
 
